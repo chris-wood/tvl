@@ -130,47 +130,99 @@ class CExpression(object):
     def compile(self):
         return self.string
 
+class CValue(object):
+    def __init__(self, desc):
+        self.desc = desc
+        self.type = None
+        self.name = None
+        self.value = None
+        self.__unpack()
+
+    def __unpack(self):
+        if "type" in self.desc:
+            self.type = self.desc["type"]
+        if "name" in self.desc:
+            self.name = self.desc["name"]
+        if "value" in self.desc:
+            self.value = self.desc["value"]
+
+    def type(self):
+        return self.type
+
+    def name(self):
+        return self.name
+
+    def value(self):
+        return self.value
+
 class CFunction(object):
     def __init__(self, description):
         self.desc = description
         self.body = []
+        self.name = None
+        self.parameters = []
+        self.output = None
+        self.__unpack()
+
+    def __unpack(self):
+        self.name = self.desc["name"]
+        self.output = CValue(self.desc["outputs"][0])
+        for param in self.desc["params"]:
+            self.parameters.append(CValue(param))
 
     def add_expression(self, expression):
         self.body.append(expression)
 
     def signature(self):
-        output = self.desc["output"]["type"]
-        output += " " + self.desc["name"] + "("
+        output = self.output.type
+        output += " " + self.name + "("
 
         count = 0
-        for param in self.desc["params"]:
-            output += param["type"] + " " + param["name"]
+        for param in self.parameters:
+            output += param.type + " " + param.name
             count += 1
-            if count < len(self.desc["params"]):
+            if count < len(self.parameters):
                 output += ","
 
         output += ")"
 
         return CExpression(output)
 
-    def invocation(self, output, arguments):
-        code = self.desc["outputs"][0]["type"] + " " + output + " = " + self.desc["name"]
+    def invocation(self, output_name, arguments):
+
+        # 1. Generate the invocation
+        code = self.output.type + " " + output_name + " = " + self.name
         code += "("
 
         count = 0
-        for param in self.desc["params"]:
+        for param in self.parameters:
             for arg in arguments:
-                if arg["name"] == param["name"]:
-                    code += str(arg["value"])
+                if arg.name == param.name:
+                    code += str(arg.value)
                     count += 1
-                    if count < len(self.desc["params"]):
+                    if count < len(self.parameters):
                         code += ","
         code += ")"
 
-        return [CExpression(code)]
+        return CExpression(code)
+
+
+    def assertion(self, output_name, arguments):
+        output_value = arguments[0]["value"]
+        check = "assert("
+
+        # check += self._comparison_code(output_name, str(output_value["value"]), output_value["type"])
+        # check += output_variable.compare_to(output_value) -> produces a == 4
+
+        check += ");"
+
+        return CExpression(check)
+
+    def compile(self):
+        pass
 
 class CProgram(Program):
-    def __init__(self, language, library):
+    def __init__(self, library):
         self.headers = []
         self.headers.append(CHeader("assert.h", False))
         self.headers.append(CHeader(library, True))
@@ -202,15 +254,28 @@ class CProgram(Program):
 
         return code
 
-program = Program("C", "add.h")
-code = program.generate_code(None, apiJson, vectorJson)
+# program = Program("C", "add.h")
+# code = program.generate_code(None, apiJson, vectorJson)
 
+# XXX: main routine should be baked into the code
+mainFunction = CFunction({"name": "main", "outputs": [{ "type" : "int"}], "params": [{"name": "argc", "type": "int"}, {"name": "argv", "type":"char **"}] })
 
-# XXX: main routine should be standard function
-mainFunction = CFunction({"name": "main", "output": { "type" : "int"}, "params": [{"name": "argc", "type": "int"}, {"name": "argv", "type":"char **"}] })
-print mainFunction.signature().compile()
+arguments = []
+for arg in vectorJson[0]["args"]:
+    val = CValue(arg)
+    arguments.append(val)
 
 testFunction = CFunction(apiJson[0])
-code = testFunction.invocation("tmp", vectorJson[0]["args"])
-for c in map(lambda c : c.compile(), code):
-    print c
+invocation = testFunction.invocation("tmp", arguments)
+check = testFunction.assertion("tmp", vectorJson[0]["outputs"])
+
+print mainFunction.signature().compile()
+print invocation.compile()
+print check.compile()
+
+#### TODO
+
+program = CProgram("add.h")
+### XXX: create vectors from the JSON file, and for each one, add an invocation and check for each one to the main function
+
+program.add_function(mainFunction)
