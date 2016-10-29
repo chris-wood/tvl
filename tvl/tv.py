@@ -1,6 +1,7 @@
 import sys
 import json
 import pycparser
+from pycparser import c_generator
 
 class FunctionTemplate(object):
     def __init__(self, jsonDescription):
@@ -255,10 +256,10 @@ class CProgram(Program):
 
 #### TODO
 
-program = CProgram("add.h")
+# program = CProgram("add.h")
 ### XXX: create vectors from the JSON file, and for each one, add an invocation and check for each one to the main function
 
-program.add_function(mainFunction)
+# program.add_function(mainFunction)
 
 ### latest
 
@@ -279,3 +280,64 @@ apiParser = pycparser.c_parser.CParser()
 
 apiAST = apiParser.parse(apiContents, filename='<none>')
 apiAST.show()
+
+print "*****"
+
+# build a dictionary that maps function names to AST nodes
+functions = {}
+for node in apiAST.ext:
+    if node.__class__.__name__ == "Decl":
+        if node.type != None:
+            if node.type.__class__.__name__ == "FuncDecl":
+                function_decl = node.type
+                name = function_decl.type.declname
+                functions[name] = function_decl
+
+# debug
+print "Functions:", functions.keys()
+
+for vector in vectorJson:
+    function_name = vector["name"]
+    if function_name not in functions:
+        print >> sys.stderr, "Cannot generate vector for function %s" % function_name
+        continue
+
+    function_decl = functions[function_name]
+    args = {}
+    for arg in vector["args"]:
+        name = arg["name"]
+        arg_type = arg["type"]
+        arg_value = arg["value"]
+        args[name] = (arg_type, arg_value)
+
+    # print args
+
+    type_decl = pycparser.c_ast.TypeDecl("tmp", [], pycparser.c_ast.IdentifierType(["int"]))
+    # type_decl.show()
+
+    param_decl = []
+    for arg in args:
+        tup = args[arg]
+        arg_type, arg_value = tup[0], tup[1]
+        if arg_type == "int":
+            value = pycparser.c_ast.Constant("int", str(arg_value))
+            param_decl.append(value)
+        else:
+            raise Exception("Don't support other types yet")
+
+    expr_list = pycparser.c_ast.ExprList(param_decl)
+    # expr_list.show()
+
+    call_decl = pycparser.c_ast.FuncCall(pycparser.c_ast.ID(function_name), expr_list)
+    # call_decl.show()
+
+    # XXX: learn more about what the parameters are
+    assignment_decl = pycparser.c_ast.Decl(type_decl, [], [], [], type_decl, call_decl, [])
+    block_decl = pycparser.c_ast.Compound([assignment_decl])
+
+    
+
+    ### build the AST that will generate the function call
+
+    generator = c_generator.CGenerator()
+    print generator.visit(block_decl)
