@@ -1,26 +1,6 @@
 import sys
 import json
-
-# 1. read in the template
-# 2. read in the API
-# 3. read in the vectors and create the program
-
-apiFile = sys.argv[1]
-vectorFile = sys.argv[2]
-templateFile = sys.argv[3]
-
-with open(apiFile, "r") as fh:
-    apiJson = json.loads(fh.read())
-
-with open(vectorFile, "r") as fh:
-    vectorJson = json.loads(fh.read())
-
-with open(templateFile, "r") as fh:
-    template = fh.read()
-
-# print apiJson
-# print vectorJson
-# print template
+import pycparser
 
 class FunctionTemplate(object):
     def __init__(self, jsonDescription):
@@ -79,8 +59,8 @@ class FunctionTemplate(object):
         return function, check
 
 
-pattern = FunctionTemplate(apiJson[0])
-function, check = pattern.instantiate(vectorJson[0])
+# pattern = FunctionTemplate(apiJson[0])
+# function, check = pattern.instantiate(vectorJson[0])
 # print function, check
 
 class Program(object):
@@ -258,20 +238,20 @@ class CProgram(Program):
 # code = program.generate_code(None, apiJson, vectorJson)
 
 # XXX: main routine should be baked into the code
-mainFunction = CFunction({"name": "main", "outputs": [{ "type" : "int"}], "params": [{"name": "argc", "type": "int"}, {"name": "argv", "type":"char **"}] })
+# mainFunction = CFunction({"name": "main", "outputs": [{ "type" : "int"}], "params": [{"name": "argc", "type": "int"}, {"name": "argv", "type":"char **"}] })
+#
+# arguments = []
+# for arg in vectorJson[0]["args"]:
+#     val = CValue(arg)
+#     arguments.append(val)
 
-arguments = []
-for arg in vectorJson[0]["args"]:
-    val = CValue(arg)
-    arguments.append(val)
-
-testFunction = CFunction(apiJson[0])
-invocation = testFunction.invocation("tmp", arguments)
-check = testFunction.assertion("tmp", vectorJson[0]["outputs"])
-
-print mainFunction.signature().compile()
-print invocation.compile()
-print check.compile()
+# testFunction = CFunction(apiJson[0])
+# invocation = testFunction.invocation("tmp", arguments)
+# check = testFunction.assertion("tmp", vectorJson[0]["outputs"])
+#
+# print mainFunction.signature().compile()
+# print invocation.compile()
+# print check.compile()
 
 #### TODO
 
@@ -279,3 +259,23 @@ program = CProgram("add.h")
 ### XXX: create vectors from the JSON file, and for each one, add an invocation and check for each one to the main function
 
 program.add_function(mainFunction)
+
+### latest
+
+apiFile = sys.argv[1]
+vectorFile = sys.argv[2]
+templateFile = sys.argv[3]
+
+with open(vectorFile, "r") as fh:
+    text = fh.read()
+    vectorJson = json.loads(text)
+
+with open(templateFile, "r") as fh:
+    template = fh.read()
+
+with open(apiFile, "r") as fh:
+    apiContents = fh.read()
+apiParser = pycparser.c_parser.CParser()
+
+apiAST = apiParser.parse(apiContents, filename='<none>')
+apiAST.show()
