@@ -280,7 +280,6 @@ apiParser = pycparser.c_parser.CParser()
 
 apiAST = apiParser.parse(apiContents, filename='<none>')
 apiAST.show()
-
 print "*****"
 
 # build a dictionary that maps function names to AST nodes
@@ -294,7 +293,7 @@ for node in apiAST.ext:
                 functions[name] = function_decl
 
 # debug
-print "Functions:", functions.keys()
+# print "Functions:", functions.keys()
 
 for vector in vectorJson:
     function_name = vector["name"]
@@ -310,7 +309,7 @@ for vector in vectorJson:
         arg_value = arg["value"]
         args[name] = (arg_type, arg_value)
 
-    # print args
+    ### build the AST that will generate the function call
 
     type_decl = pycparser.c_ast.TypeDecl("tmp", [], pycparser.c_ast.IdentifierType(["int"]))
     # type_decl.show()
@@ -333,11 +332,18 @@ for vector in vectorJson:
 
     # XXX: learn more about what the parameters are
     assignment_decl = pycparser.c_ast.Decl(type_decl, [], [], [], type_decl, call_decl, [])
-    block_decl = pycparser.c_ast.Compound([assignment_decl])
 
-    
+    # build the AST that will generate the check code
+    # XXX: this should be sent to a function to do the comparison
+    output_type = vector["outputs"][0]["type"]
+    output_value = vector["outputs"][0]["value"]
+    check_op = pycparser.c_ast.BinaryOp("==", pycparser.c_ast.ID(type_decl.declname), pycparser.c_ast.Constant(output_type, output_value))
+    check_expr = pycparser.c_ast.ExprList([check_op])
+    check_decl = pycparser.c_ast.FuncCall(pycparser.c_ast.ID("assert"), check_expr)
 
-    ### build the AST that will generate the function call
-
+    block_decl = pycparser.c_ast.Compound([assignment_decl, check_decl])
     generator = c_generator.CGenerator()
     print generator.visit(block_decl)
+
+# op = pycparser.c_ast.BinaryOp("==", pycparser.c_ast.ID("tmp"), pycparser.c_ast.Constant("int", str(2)))
+# op.show()
