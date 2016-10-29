@@ -337,6 +337,7 @@ for vector in vectorJson:
     # XXX: this should be sent to a function to do the comparison
     output_type = vector["outputs"][0]["type"]
     output_value = vector["outputs"][0]["value"]
+
     check_op = pycparser.c_ast.BinaryOp("==", pycparser.c_ast.ID(type_decl.declname), pycparser.c_ast.Constant(output_type, output_value))
     check_expr = pycparser.c_ast.ExprList([check_op])
     check_decl = pycparser.c_ast.FuncCall(pycparser.c_ast.ID("assert"), check_expr)
