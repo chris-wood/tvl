@@ -1,48 +1,31 @@
-[
-    {
-    "name": "add",
-    "args": [
-        {
-            "name": "a",
-            "type": "int",
-            "value": 2,
-            "format": "int"
-        },
-        {
-            "name": "b",
-            "type": "int",
-            "value": 2,
-            "format": "int"
-        }
-    ],
-    "outputs": [
-        {
-            "type": "int",
-            "value": 4,
-            "format": "int"
-        }
-    ]},
-    {
-    "name": "add",
-    "name": [
-        {
-            "name": "a",
-            "type": "int",
-            "value": 1,
-            "format": "int"
-        },
-        {
-            "name": "b",
-            "type": "int",
-            "value": 1,
-            "format": "int"
-        }
-    ],
-    "outputs": [
-        {
-            "type": "int",
-            "value": 2,
-            "format": "int"
-        }
-    ]}
-]
+[{
+	"name": "add",
+	"args": [{
+		"name": "a",
+		"type": "int",
+		"value": 2
+	}, {
+		"name": "b",
+		"type": "int",
+		"value": 2
+	}],
+	"outputs": [{
+		"type": "int",
+		"value": 4
+	}]
+}, {
+	"name": "add",
+	"args": [{
+		"name": "a",
+		"type": "int",
+		"value": 1
+	}, {
+		"name": "b",
+		"type": "int",
+		"value": 1
+	}],
+	"outputs": [{
+		"type": "int",
+		"value": 2
+	}]
+}]
