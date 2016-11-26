@@ -1,0 +1,16 @@
+[{
+	"name": "concat",
+	"args": [{
+		"name": "x",
+		"type": "char*",
+		"value": "\"Hello, \""
+	}, {
+		"name": "y",
+		"type": "char*",
+		"value": "\"World!\""
+	}],
+	"output": {
+		"type": "char*",
+		"value": "\"Hello, World!\""
+	}
+}]

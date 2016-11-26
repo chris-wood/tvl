@@ -9,10 +9,10 @@
 		"type": "int",
 		"value": 2
 	}],
-	"outputs": [{
+	"output": {
 		"type": "int",
 		"value": 4
-	}]
+	}
 }, {
 	"name": "add",
 	"args": [{
@@ -24,8 +24,8 @@
 		"type": "int",
 		"value": 1
 	}],
-	"outputs": [{
+	"output": {
 		"type": "int",
 		"value": 2
-	}]
+	}
 }]
