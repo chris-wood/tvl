@@ -32,12 +32,12 @@ for node in apiAST.ext:
             if node.type.__class__.__name__ == "FuncDecl":
                 function_decl = node.type
 
+                # XXX: we may need to do this more than once...
+                # but the point here is to identify the name of the function, not its output type
+                # XXX: as an additional check, we may store the output type and make sure it matches
+                # those in the vectors
                 if function_decl.type.__class__.__name__ == "PtrDecl":
                     function_decl = function_decl.type
-
-                # print type(function_decl)
-                # print type(function_decl.type)
-                # function_decl.type.show()
 
                 name = function_decl.type.declname
                 functions[name] = function_decl
