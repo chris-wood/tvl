@@ -71,7 +71,7 @@ for vector in vectorJson:
         arg_type, arg_value = tup[0], tup[1]
         if arg_type == "int":
             value = pycparser.c_ast.Constant("int", str(arg_value))
-            param_decl.append(0, value)
+            param_decl.insert(0, value)
         elif arg_type == "char*":
             value = pycparser.c_ast.Constant("char *", str(arg_value))
             param_decl.insert(0, value)

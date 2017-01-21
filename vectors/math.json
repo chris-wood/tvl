@@ -1,0 +1,31 @@
+[{
+	"name": "add",
+	"args": [{
+		"name": "a",
+		"type": "int",
+		"value": 2
+	}, {
+		"name": "b",
+		"type": "int",
+		"value": 2
+	}],
+	"output": {
+		"type": "int",
+		"value": 4
+	}
+}, {
+	"name": "addp",
+	"args": [{
+		"name": "a",
+		"type": "int",
+		"value": 1
+	}, {
+		"name": "b",
+		"type": "int",
+		"value": 1
+	}],
+	"output": {
+		"type": "int",
+		"value": 2
+	}
+}]
