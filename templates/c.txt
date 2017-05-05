@@ -1,9 +1,0 @@
-// INCLUDE YOUR HEADERS HERE
-
-int
-main(int argc, char *argv[argc])
-{
-    {% MEAT %}
-
-    return 0;
-}
